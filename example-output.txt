@@ -1,0 +1,119 @@
+$ sudo ./vps-audit.sh
+
+vps-audit 1.0.0  web-01 | Debian GNU/Linux 13 (trixie) | 6.12.94+
+
+[ PASS ] SSH password login   PasswordAuthentication no
+[ WARN ] SSH root login       PermitRootLogin prohibit-password (default) (key only)
+         fix: echo 'PermitRootLogin no' | sudo tee /etc/ssh/sshd_config.d/10-no-root.conf && sudo systemctl reload ssh  # use a sudo user first
+[ WARN ] Open ports           listening: tcp/22(sshd) tcp/3000(node) tcp/443(nginx) tcp/80(nginx)
+         fix: sudo ss -tulnp  # review each service, stop or bind to 127.0.0.1 what you do not need
+[ FAIL ] Firewall             no active firewall found (checked ufw, nftables, iptables)
+         fix: sudo apt install ufw && sudo ufw allow OpenSSH && sudo ufw enable
+[ PASS ] Security updates     no pending security updates (based on last apt update)
+[ FAIL ] Automatic updates    unattended-upgrades not installed or not enabled
+         fix: sudo apt install unattended-upgrades && sudo dpkg-reconfigure -plow unattended-upgrades
+[ FAIL ] fail2ban             not installed
+         fix: sudo apt install fail2ban && sudo systemctl enable --now fail2ban
+[ PASS ] Swap                 no swap, but 16002 MB RAM
+[ PASS ] Disk space           / is 47% used, 69563 MB free
+[ PASS ] Disk write speed     1.4 GB/s (64MB direct write)
+[ PASS ] Time sync            clock synchronised (NTP)
+[ PASS ] Reboot required      no reboot pending
+
+Score: 65/100
+Scored on checks that could run. Read-only: nothing was changed.
+
+$ sudo ./vps-audit.sh --json | jq .
+{
+  "tool": "vps-audit",
+  "version": "1.0.0",
+  "host": "web-01",
+  "root": true,
+  "score": 65,
+  "checks": [
+    {
+      "name": "SSH password login",
+      "status": "pass",
+      "weight": 15,
+      "detail": "PasswordAuthentication no",
+      "fix": ""
+    },
+    {
+      "name": "SSH root login",
+      "status": "warn",
+      "weight": 10,
+      "detail": "PermitRootLogin prohibit-password (default) (key only)",
+      "fix": "echo 'PermitRootLogin no' | sudo tee /etc/ssh/sshd_config.d/10-no-root.conf && sudo systemctl reload ssh  # use a sudo user first"
+    },
+    {
+      "name": "Open ports",
+      "status": "warn",
+      "weight": 10,
+      "detail": "listening: tcp/22(sshd) tcp/3000(node) tcp/443(nginx) tcp/80(nginx)",
+      "fix": "sudo ss -tulnp  # review each service, stop or bind to 127.0.0.1 what you do not need"
+    },
+    {
+      "name": "Firewall",
+      "status": "fail",
+      "weight": 15,
+      "detail": "no active firewall found (checked ufw, nftables, iptables)",
+      "fix": "sudo apt install ufw && sudo ufw allow OpenSSH && sudo ufw enable"
+    },
+    {
+      "name": "Security updates",
+      "status": "pass",
+      "weight": 10,
+      "detail": "no pending security updates (based on last apt update)",
+      "fix": ""
+    },
+    {
+      "name": "Automatic updates",
+      "status": "fail",
+      "weight": 5,
+      "detail": "unattended-upgrades not installed or not enabled",
+      "fix": "sudo apt install unattended-upgrades && sudo dpkg-reconfigure -plow unattended-upgrades"
+    },
+    {
+      "name": "fail2ban",
+      "status": "fail",
+      "weight": 5,
+      "detail": "not installed",
+      "fix": "sudo apt install fail2ban && sudo systemctl enable --now fail2ban"
+    },
+    {
+      "name": "Swap",
+      "status": "pass",
+      "weight": 5,
+      "detail": "no swap, but 16002 MB RAM",
+      "fix": ""
+    },
+    {
+      "name": "Disk space",
+      "status": "pass",
+      "weight": 10,
+      "detail": "/ is 47% used, 69563 MB free",
+      "fix": ""
+    },
+    {
+      "name": "Disk write speed",
+      "status": "pass",
+      "weight": 5,
+      "detail": "1.4 GB/s (64MB direct write)",
+      "fix": ""
+    },
+    {
+      "name": "Time sync",
+      "status": "pass",
+      "weight": 5,
+      "detail": "clock synchronised (NTP)",
+      "fix": ""
+    },
+    {
+      "name": "Reboot required",
+      "status": "pass",
+      "weight": 5,
+      "detail": "no reboot pending",
+      "fix": ""
+    }
+  ]
+}
