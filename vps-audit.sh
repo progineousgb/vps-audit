@@ -3,11 +3,18 @@
 # Maintained by Pro Gineous (https://progineous.com). MIT licensed.
 set -euo pipefail
 
-VERSION="1.0.0"
+VERSION="1.0.1"
 JSON=0
 COLOR=1
 DISK_TEST=0
 DISK_TEST_MB=64
+
+# Remove the disk test file even if the run is interrupted.
+TMP_FILE=""
+cleanup() { [[ -n "$TMP_FILE" ]] && rm -f "$TMP_FILE"; return 0; }
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 usage() {
   cat <<USAGE
@@ -256,9 +263,11 @@ check_disk_speed() {
     return
   fi
   tmp=$(mktemp "$dir/vps-audit.XXXXXX")
+  TMP_FILE=$tmp
   out=$(LC_ALL=C dd if=/dev/zero of="$tmp" bs=1M count="$DISK_TEST_MB" oflag=direct conv=fdatasync 2>&1 \
      || LC_ALL=C dd if=/dev/zero of="$tmp" bs=1M count="$DISK_TEST_MB" conv=fdatasync 2>&1) || true
   rm -f "$tmp"
+  TMP_FILE=""
   DISK_SPEED=$(awk -F', ' '/copied/ {print $NF}' <<<"$out")
   if [[ -z "$DISK_SPEED" ]]; then
     add skip "Disk write speed" 0 "dd test failed"
