@@ -14,6 +14,10 @@ less vps-audit.sh
 sudo bash vps-audit.sh
 ```
 
+## Platform
+
+Linux only. The script targets Linux servers (Debian, Ubuntu, and similar) and needs bash and root. It does not run on macOS or Windows; from those systems, run it on the server over SSH.
+
 ## Example output
 
 Example run on a fresh VPS before any hardening.

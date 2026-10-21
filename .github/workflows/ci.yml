@@ -1,0 +1,14 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: bash -n
+        run: git ls-files '*.sh' | xargs -r -n1 bash -n
+      - name: shellcheck
+        run: git ls-files '*.sh' | xargs -r shellcheck
